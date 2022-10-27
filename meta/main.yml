@@ -1,7 +1,7 @@
 galaxy_info:
   author: Mira Kuntz
   namespace: usegalaxy_eu
-  description: Starts a Docker-Compose file for traefik using geerlingguy.docker role
+  description: Installs Traefik using docker-compose, geerlingguy.docker and geerlingguy.pip role
   company: UseGalaxy.eu
 
   license: CC-BY-4.0
