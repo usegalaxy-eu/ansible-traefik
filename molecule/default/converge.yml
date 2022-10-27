@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    docker_service_manage: false
+  tasks:
+    - name: "Include usegalaxy_eu.traefik"
+      include_role:
+        name: "usegalaxy_eu.traefik"

@@ -1,0 +1,55 @@
+---
+# tasks file for traefik
+- name: Set up docker-compose
+  ansible.builtin.import_role:
+    name: geerlingguy.docker
+
+- name: Ensures traefik dir exists
+  file:
+    path: "{{ traefik_dir }}"
+    state: directory
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: 0700
+  notify: "restart traefik"
+
+- name: Ensures acme.json file exists
+  file:
+    path: "{{ traefik_dir }}/acme.json"
+    state: touch
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: 0600
+
+- name: Ensures traefiks rules directory exists
+  file:
+    path: "{{ traefik_dir }}/rules"
+    state: directory
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: 0700
+
+- name: Copy rules files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ traefik_dir }}/rules"
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: 0700
+  with_fileglob:
+    - "files/rules/*"
+
+- name: Adding docker-compose file
+  copy:
+    src: "files/{{ traefik_compose_file }}"
+    dest: "{{ traefik_dir }}/{{ traefik_compose_file }}"
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: 0700
+  notify: "restart traefik"
+
+- name: Ensure docker network for the deployment exists
+  community.docker.docker_network:
+    name: "{{ traefik_network_name }}"
+    state: present
+  notify: "restart traefik"

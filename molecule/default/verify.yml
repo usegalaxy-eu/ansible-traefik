@@ -1,0 +1,18 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Get html
+      uri:
+        url: http://whoami@localhost
+        return_content: yes
+      register: this
+      failed_when: "expected_content not in this.content"
+
+    - name: Ensure content type is text/html
+      assert:
+        that:
+          - "'text/html' in this.content_type"

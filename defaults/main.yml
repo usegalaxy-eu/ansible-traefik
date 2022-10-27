@@ -1,0 +1,7 @@
+---
+# defaults file for traefik
+traefik_dir: /etc/traefik
+traefik_compose_file: docker-compose.yml
+traefik_user: root
+traefik_group: root
+traefik_network_name: t2

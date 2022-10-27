@@ -1,0 +1,33 @@
+galaxy_info:
+  author: Mira Kuntz
+  namespace: usegalaxy_eu
+  description: Starts a Docker-Compose file for traefik using geerlingguy.docker role
+  company: UseGalaxy.eu
+
+  license: CC-BY-4.0
+
+  min_ansible_version: 2.4
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+dependencies:
+  - role: geerlingguy.docker
+    vars:
+      docker_users:
+        - "{{ traefik_user }}"
+  - role: geerlingguy.pip
+    vars:
+      pip_install_packages:
+        - name: docker
+        - name: docker-compose

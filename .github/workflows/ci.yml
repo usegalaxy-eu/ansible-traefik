@@ -1,0 +1,45 @@
+---
+name: CI
+"on":
+  pull_request:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: "usegalaxy_eu.flower"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v2
+
+      - name: Run yaml-lint
+        uses: ibiqlik/action-yamllint@v3
+
+      - name: Run ansible-lint
+        # replace `main` with any valid ref, or tags like `v6`
+        uses: ansible-community/ansible-lint-action@main
+  #molecule:
+  #  runs-on: ubuntu-latest
+  #  strategy:
+  #    fail-fast: false
+  #    matrix:
+  #      scenario:
+  #        - default
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v2
+  #      with:
+  #        path: "${{ github.repository }}"
+  #    - name: Molecule
+  #      uses: gofrolist/molecule-action@v2.2.42
+  #      with:
+  #        molecule_command: test
+  #        molecule_working_dir: "${{ github.repository }}"
+  #      env:
+  #        ANSIBLE_FORCE_COLOR: "1"

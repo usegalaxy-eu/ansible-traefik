@@ -1,0 +1,30 @@
+---
+# handlers file for traefik
+- name: Start docker-compose
+  community.docker.docker_compose:
+    project_src: "{{ traefik_dir }}"
+    project_name: "{{ traefik_compose_file }}"
+  register: output
+  listen: "restart traefik"
+
+- name: Debug first run
+  ansible.builtin.debug:
+    var: output
+  listen: "restart traefik"
+
+- name: Ensure everything started correctly by running docker-compose up again
+  community.docker.docker_compose:
+    project_src: "{{ traefik_dir }}"
+    project_name: "{{ traefik_compose_file }}"
+  register: output
+  listen: "restart traefik"
+
+- name: Debug second run
+  ansible.builtin.debug:
+    var: output
+  listen: "restart traefik"
+
+- name: Assert
+  ansible.builtin.assert:
+    that: not output.changed
+  listen: "restart traefik"
