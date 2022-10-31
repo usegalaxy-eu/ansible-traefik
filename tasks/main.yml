@@ -1,9 +1,5 @@
 ---
 # tasks file for traefik
-- name: Set up docker-compose
-  ansible.builtin.import_role:
-    name: geerlingguy.docker
-
 - name: Ensures traefik dir exists
   file:
     path: "{{ traefik_dir }}"
@@ -20,6 +16,10 @@
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
     mode: 0600
+
+- name: Include ACME Cloudflare Docker secrets
+  include_tasks: cloudflare-secrets.yml
+  when: traefik_cloudflare
 
 - name: Ensures traefiks rules directory exists
   file:
@@ -48,8 +48,7 @@
     mode: 0700
   notify: "restart traefik"
 
-- name: Ensure docker network for the deployment exists
-  community.docker.docker_network:
-    name: "{{ traefik_network_name }}"
-    state: present
-  notify: "restart traefik"
+- name: Start docker-compose
+  community.docker.docker_compose:
+    project_src: "{{ traefik_dir }}"
+  register: output

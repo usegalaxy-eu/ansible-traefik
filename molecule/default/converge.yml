@@ -1,6 +1,7 @@
 ---
 - name: Converge
   hosts: all
+  become: yes
   vars:
     docker_service_manage: false
   tasks:

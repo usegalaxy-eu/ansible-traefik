@@ -29,5 +29,7 @@ dependencies:
   - role: geerlingguy.pip
     vars:
       pip_install_packages:
+        - name: pip
+          state: latest
         - name: docker
         - name: docker-compose
