@@ -1,5 +1,9 @@
 ---
 # tasks file for traefik
+- name: Include EL9 python workaround
+  include_tasks: ansible-python.yml
+  when: not (ansible_os_family == "RedHat" and ansible_distribution_major_version == '9')
+
 - name: Ensures traefik dir exists
   file:
     path: "{{ traefik_dir }}"
@@ -39,7 +43,7 @@
   with_fileglob:
     - "files/rules/*"
 
-- name: Adding docker-compose file
+- name: Copy docker-compose file
   copy:
     src: "files/{{ traefik_compose_file }}"
     dest: "{{ traefik_dir }}/{{ traefik_compose_file }}"
@@ -47,6 +51,10 @@
     group: "{{ traefik_group }}"
     mode: 0700
   notify: "restart traefik"
+
+- name: Copy extra files
+  include_tasks: extra-files.yml
+  when: traefik_copy_extra_files or traefik_env
 
 - name: Start docker-compose
   community.docker.docker_compose:

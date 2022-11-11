@@ -2,19 +2,24 @@
 
 Role that starts a Traefik2 reverse proxy using Geerlingguy's Docker and Pip roles.
 
+> :warning: **For RHEL/Alma/Rocky 9 add `ansible_python_interpreter=/ansible/bin/python` to your inventory hostname.**: The Docker Python package installation can fail sometimes, if not done in a virtualenv.
+
 ## Requirements
 
 none
 
 ## Role Variables
 
-The role uses very few variables:
+The role uses following variables:
 
 - **traefik_user** specifies the user to own the copied files and to be added to docker group
 - **traefik_group** specifies the group to own the copied files
 - **traefik_dir** the root path in which all files and the role directory go
 - **traefik_compose_file** in case you want a different name
 - **traefik_network_name** the name of created docker network
+- **traefik_copy_extra_files** set to `true`, if you want to copy everything in files/traefik directory to the `traefik_dir`
+- **traefik_env** you can put all your .env variables here (with `traefik_env: |`) and it will be written to .env file directly.
+- **traefik_cloudflare** needs to be set to `true` to copy your `traefik_cloudflare_api` and `traefik_cloudflare_email` from vault into a Docker secret file.
 
 ## Dependencies
 

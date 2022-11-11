@@ -31,5 +31,12 @@ dependencies:
       pip_install_packages:
         - name: pip
           state: latest
+        - name: wheel
+  - role: geerlingguy.pip
+    become: true
+    vars:
+      pip_install_packages:
         - name: docker
         - name: docker-compose
+    when: not (ansible_os_family == "RedHat" and ansible_distribution_major_version == '9')
+    ## EL9: PLEASE SET ansible_python_interpreter=/ansible/bin/python

@@ -5,10 +5,10 @@ traefik_compose_file: docker-compose.yml
 traefik_user: root
 traefik_group: root
 traefik_network_name: t2
-
+traefik_copy_extra_files: false
 # if using cloudflare provider for DNS challenge,
 # set to true and put credentials in vault
 traefik_cloudflare: false
 
-cloudflare_api_key: I_MUST_go_to_VAULT!
-cloudflare_email: I_should_go_to_vault_too!
+traefik_cloudflare_api_key: I_MUST_go_to_VAULT!
+traefik_cloudflare_email: I_should_go_to_vault_too!
