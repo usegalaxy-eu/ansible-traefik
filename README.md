@@ -2,8 +2,6 @@
 
 Role that starts a Traefik2 reverse proxy using Geerlingguy's Docker and Pip roles.
 
-> :warning: **For RHEL/Alma/Rocky 9 add `ansible_python_interpreter=/ansible/bin/python` to your inventory hostname.**: The Docker Python package installation can fail sometimes, if not done in a virtualenv.
-
 ## Requirements
 
 none
