@@ -4,7 +4,7 @@
   pip:
     name: "{{ item }}"
     virtualenv: /ansible
-    virtualenv_command: "python -m venv"
+    virtualenv_command: "python3 -m venv"
     virtualenv_site_packages: false
   loop:
     - docker
