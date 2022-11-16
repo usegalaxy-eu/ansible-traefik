@@ -2,7 +2,7 @@
 # tasks file for traefik
 - name: Include EL9 python workaround
   include_tasks: ansible-python.yml
-  when: not (ansible_os_family == "RedHat" and ansible_distribution_major_version == '9')
+  when: ansible_os_family == "RedHat"
 
 - name: Ensures traefik dir exists
   file:

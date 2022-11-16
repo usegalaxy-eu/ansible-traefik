@@ -3,10 +3,12 @@
   become: true
   pip:
     name: "{{ item }}"
-    virtualenv: /ansible/bin/python
+    virtualenv: /ansible
     virtualenv_command: python3.9 -m venv
     virtualenv_site_packages: false
-
   loop:
     - docker
     - docker-compose
+
+- set_fact:
+    ansible_python_interpreter: /ansible/bin/python
