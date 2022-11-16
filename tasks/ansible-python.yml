@@ -10,5 +10,6 @@
     - docker
     - docker-compose
 
-- set_fact:
+- name: Set Python Interpreter
+  set_fact:
     ansible_python_interpreter: /ansible/bin/python
