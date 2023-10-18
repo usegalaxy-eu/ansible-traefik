@@ -1,0 +1,20 @@
+- name: Check for rollback
+  ansible.builtin.command:
+    cmd: "docker service inspect item.name --format '{{ '{{' }} .UpdateStatus.State {{ '}}' }}'"
+  register: inspect
+  failed_when: ("rollback" in inspect.stdout)
+  changed_when: false
+- name: Check for errors
+  ansible.builtin.shell:
+    cmd: "docker service ps {{ item.name }} --format '{{ '{{' }} .CurrentState {{ '}}' }}' | awk '{print $1}'| grep Running | wc -l"
+  register: inspect
+  failed_when: (inspect.stdout|int != item.replicas)
+  changed_when: false
+- name: Ensure all services are reachable
+  ansible.builtin.uri:
+    url: "{{ item.url }}"
+    return_content: "{{ item.content | default(omit) }}"
+    force: true
+  when: (item.url is defined)
+  register: reachable
+  failed_when: (reachable.status != '200')

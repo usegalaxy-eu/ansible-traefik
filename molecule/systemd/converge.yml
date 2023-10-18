@@ -1,7 +1,12 @@
 ---
 - name: Converge
   hosts: all
+  become: yes
   tasks:
+    - name: "Include geerlingguy.docker"
+      include_role:
+        name: "geerlingguy.docker"
+
     - name: "Include usegalaxy_eu.traefik"
       include_role:
         name: "usegalaxy_eu.traefik"

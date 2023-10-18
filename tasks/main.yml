@@ -1,17 +1,13 @@
 ---
 # tasks file for traefik
-- name: Include EL9 python workaround
-  include_tasks: ansible-python.yml
-  when: ansible_os_family == "RedHat"
-
 - name: Ensures traefik dir exists
   file:
     path: "{{ traefik_dir }}"
     state: directory
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: 0700
-  notify: "restart traefik"
+    mode: '0700'
+ # notify: "restart traefik"
 
 - name: Ensures acme.json file exists
   file:
@@ -19,10 +15,10 @@
     state: touch
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: 0600
+    mode: '0600'
 
 - name: Include ACME Cloudflare Docker secrets
-  include_tasks: cloudflare-secrets.yml
+  include_tasks: secrets.yml
   when: traefik_cloudflare
 
 - name: Ensures traefiks rules directory exists
@@ -31,7 +27,7 @@
     state: directory
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: 0700
+    mode: '0700'
 
 - name: Copy rules files
   copy:
@@ -39,24 +35,64 @@
     dest: "{{ traefik_dir }}/rules"
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: 0700
+    mode: '0700'
   with_fileglob:
-    - "files/rules/*"
+    - "{{ traefik_rules_location }}"
+  when: traefik_copy_rules
 
-- name: Copy docker-compose file
-  copy:
-    src: "files/{{ traefik_compose_file }}"
-    dest: "{{ traefik_dir }}/{{ traefik_compose_file }}"
-    owner: "{{ traefik_user }}"
-    group: "{{ traefik_group }}"
-    mode: 0700
-  notify: "restart traefik"
 
 - name: Copy extra files
   include_tasks: extra-files.yml
-  when: traefik_copy_extra_files or traefik_env
+  when: traefik_copy_extra_files
 
-- name: Start docker-compose
-  community.docker.docker_compose:
-    project_src: "{{ traefik_dir }}"
-  register: output
+- name: Make sure docker is running
+  # Comment
+  ansible.builtin.systemd_service:
+    name: docker
+    state: restarted
+
+
+- name: Create networks
+  community.docker.docker_network:
+    name: "{{ item.key }}"
+    internal: "{{ item.value.internal }}"
+    driver: "{{ item.value.driver }}"
+  loop: "{{ traefik_networks | dict2items }}"
+
+- name: Start a container
+  community.docker.docker_swarm_service:
+    name: "{{ item.name }}"
+    image: "{{ item.image }}"
+    replicas: "{{ item.replicas }}"
+   # restart_config: 
+   #   delay: 5s
+   #   max_attempts: 3
+   #   window: 120s
+   #   condition: "{{ item.restart_policy | default(omit) }}"
+   # update_config:
+   #   failure_action: "{{ item.update.failure_action if item.update.failure_action is defined else traefik_update.failure_action }}"
+   #   monitor: "{{ item.update.monitor if item.update.monitor is defined else traefik_update.monitor_time }}"
+   #   max_failure_ratio: "{{ item.update.max_failure_ratio if item.update.max_failure_ratio is defined else traefik_update.max_failure_ratio }}"
+   #   delay: "{{ item.update.delay if item.update.delay is defined else traefik_update.delay }}"
+   #   parallelism: "{{ item.update.parallelism if item.update.parallelism is defined else traefik_update.parallelism }}"
+   #   order: "{{ item.update.order if item.update.order is defined else traefik_update.order }}"
+   # rollback_config:
+   #   failure_action: "{{ item.rollback.failure_action if item.rollback.failure_action is defined else traefik_rollback.failure_action }}"
+   #   order: "{{ item.rollback.order if item.rollback.order is defined else traefik_rollback.order }}"
+   #   parallelism: "{{ item.rollback.parallelism if item.rollback.parallelism is defined else traefik_rollback.parallelism }}"
+   #   delay: "{{ item.rollback.parallelism if item.rollback.parallelism is defined else traefik_rollback.delay }}"
+   #   max_failure_ratio: "{{ item.rollback.max_failure_ratio if item.rollback.max_failure_ratio is defined else traefik_rollback.max_failure_ratio }}"
+   #   monitor: "{{ item.rollback.monitor if item.rollback.monitor is defined else traefik_rollback.monitor_time }}"
+    mounts: "{{ item.mounts | default(omit) }}"
+    publish: "{{ item.publish | default(omit) }}"
+    env: "{{ item.environment | default(omit) }}"
+    networks: "{{ item.networks }}"
+    args: "{{ item.command | default(omit) }}"
+    labels: "{{ item.labels | default(omit) }}"
+    secrets: "{{ item.secrets | default(omit) }}"
+    mode: "{{ item.mode | default(omit) }}"
+    # healthcheck: "{{ item.healthcheck | default(omit) }}"
+  loop:
+    "{{ traefik_containers }}"
+  notify: service_changed
+

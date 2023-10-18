@@ -1,7 +1,11 @@
 ---
 # handlers file for traefik
-- name: Ensure containers are restarted
-  community.docker.docker_compose:
-    project_src: "{{ traefik_dir }}"
-    restarted: yes
-  listen: "restart traefik"
+- name: Wait for the service to come up
+  ansible.builtin.pause:
+    minutes: 1
+  listen: service_changed
+
+- name: Healthcheck
+  ansible.builtin.include_tasks: tasks/healthcheck.yml
+  loop: "{{ traefik_containers }}"
+  listen: service_changed

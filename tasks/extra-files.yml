@@ -5,16 +5,7 @@
     dest: "{{ traefik_dir }}"
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: 0700
+    mode: "0700"
   with_fileglob:
-    - "files/traefik/*.yml"
+    - "{{ traefik_files_location }}"
   when: traefik_copy_extra_files
-
-- name: Create .env file
-  copy:
-    content: "{{ traefik_env }}"
-    dest: "{{ traefik_dir }}/.env"
-    mode: 0600
-    owner: "{{ traefik_user }}"
-    group: "{{ traefik_group }}"
-  when: traefik_env
