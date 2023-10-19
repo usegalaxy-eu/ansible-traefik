@@ -16,7 +16,7 @@
     return_content: "{{ item.content | default(omit) }}"
     force: true
   when: (item.url is defined)
-  register: reachable
+  register: http_response
 - name: Fail playbook on non-200 HTTP status code
   fail:
     msg: "HTTP status code is not 200 OK. Actual status code: {{ http_response.status }}"
