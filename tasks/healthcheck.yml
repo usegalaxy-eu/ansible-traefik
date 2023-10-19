@@ -17,4 +17,7 @@
     force: true
   when: (item.url is defined)
   register: reachable
-  failed_when: (reachable.status != '200')
+- name: Fail playbook on non-200 HTTP status code
+  fail:
+    msg: "HTTP status code is not 200 OK. Actual status code: {{ http_response.status }}"
+  when: http_response.status != 200
