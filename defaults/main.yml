@@ -15,6 +15,7 @@ traefik_cloudflare: false
 
 # This role can manage Authelia and hash the passwords
 # by using Docker and an Authelia container
+traefik_manage_authelia: false
 traefik_authelia_hash_command: "authelia crypto hash generate argon2"
 traefik_authelia_hash_image: "authelia/authelia:latest"
 traefik_authelia_hash_host: localhost
