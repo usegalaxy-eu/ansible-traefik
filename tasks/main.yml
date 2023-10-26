@@ -99,4 +99,3 @@
   loop:
     "{{ traefik_containers }}"
   notify: service_changed
-
