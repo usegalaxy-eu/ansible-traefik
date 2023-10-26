@@ -4,6 +4,7 @@ users:
     displayname: {{ user.displayname }}
     email: {{ user.email }}
     {% if user.groups is defined %}
+    groups:
     {% for group in user.groups%}
       - {{ group }}
     {% endfor %}
