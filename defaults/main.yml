@@ -13,6 +13,18 @@ traefik_rules_location: "files/traefik/rules/*.yml"
 # set to true and put credentials in vault
 traefik_cloudflare: false
 
+# This role can manage Authelia and hash the passwords
+# by using Docker and an Authelia container
+traefik_authelia_hash_command: "authelia crypto hash generate argon2"
+traefik_authelia_hash_image: "authelia/authelia:latest"
+traefik_authelia_hash_host: localhost
+traefik_authelia_dir: "{{ traefik_dir }}/authelia"
+
+# This you should place in vault
+authelia_users:
+  exampleuser1:
+    name:
+
 
 traefik_update:
   failure_action: rollback

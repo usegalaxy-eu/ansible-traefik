@@ -45,6 +45,10 @@
   include_tasks: extra-files.yml
   when: traefik_copy_extra_files
 
+- name: Set up Authelia and hash passwords
+  include_tasks: authelia.yml
+  when: traefik_manage_authelia
+
 - name: Make sure docker is running
   # Comment
   ansible.builtin.systemd_service:

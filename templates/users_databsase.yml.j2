@@ -1,0 +1,11 @@
+users:
+{% for user in authelia_users %}
+  {{ user.username }}:
+    displayname: {{ user.displayname }}
+    email: {{ user.email }}
+    {% if user.groups is defined %}
+    {% for group in user.groups%}
+      - {{ group }}
+    {% endfor %}
+    {% endif %}
+{% endfor %}
