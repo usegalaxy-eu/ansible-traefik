@@ -26,6 +26,6 @@
 - name: Hash passwords from vault
   include_tasks: hash_passwords.yml
   no_log: true
-  loop: "{{ authelia_users | dict2items }}"
+  loop: "{{ authelia_users }}"
   loop_control:
     index_var: index
