@@ -1,5 +1,4 @@
 ---
-# tasks file for traefik
 - name: Ensures traefik dir exists
   file:
     path: "{{ traefik_dir }}"
@@ -7,7 +6,6 @@
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
     mode: '0700'
- # notify: "restart traefik"
 
 - name: Ensures acme.json file exists
   file:
@@ -38,9 +36,7 @@
   include_tasks: extra-files.yml
   when: traefik_copy_extra_files
 
-- name: Set up Authelia and hash passwords
-  include_tasks: authelia.yml
-  when: traefik_manage_authelia
+# authelia starting point in b5a0d414fbb787d52bd23e14e2746e88fbee6bac
 
 - name: Make sure docker is running
   # Comment
@@ -88,6 +84,7 @@
     labels: "{{ item.labels | default(omit) }}"
     secrets: "{{ item.secrets | default(omit) }}"
     mode: "{{ item.mode | default(omit) }}"
+    cap_add: "{{ item.cap_add | default(omit) }}"
     # healthcheck: "{{ item.healthcheck | default(omit) }}"
   loop:
     "{{ traefik_containers }}"
