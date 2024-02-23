@@ -2,7 +2,7 @@
 # Kept for when there is a v3 json schema
 - name: Find treafik container in traefik_containers "traefik"
   set_fact:
-    treafik_definition: "{{ traefik_containers | selectattr('image', 'search', '^traefik:') | first }}"
+    traefik_definition: "{{ traefik_containers | selectattr('image', 'match', 'traefik:') | first }}"
 
 - name: Split string after ":" to get the traefik image version
   set_fact:
