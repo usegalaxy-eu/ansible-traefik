@@ -2,11 +2,11 @@
 # Kept for when there is a v3 json schema
 - name: Find treafik container in traefik_containers "traefik"
   set_fact:
-    treafik_image: "{{ my_list | selectattr('Image', 'search', '^traefik:') | first }}"
+    treafik_definition: "{{ traefik_containers | selectattr('image', 'search', '^traefik:') | first }}"
 
 - name: Split string after ":" to get the traefik image version
   set_fact:
-    traefik_version: "{{ traefik_attribute.Image.split(':')[1] | default('') }}"
+    traefik_version: "{{ traefik_definition.image.split(':')[1] | default('') }}"
 
 - name: Validate if traefik version < v3
   when: traefik_version is version('v3', '<', version_type='semver')
