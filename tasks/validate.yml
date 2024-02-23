@@ -1,0 +1,30 @@
+---
+# - name: Validate rules files
+#   community.docker.docker_container:
+#     name: traefik-validation
+#     image: ghcr.io/otto-de/traefik-config-validator:latest
+#     volumes:
+#       - "{{ playbook_dir }}/{{ traefik_rules_location }}:/traefik"
+#     command: "traefik-config-validator -cfgdir /traefik"
+#     detach: false
+#   register: validation
+#   delegate_to: localhost
+#   become: false
+
+# Kept for when there is a v3 json schema
+- name: Validate rules files
+  ansible.builtin.shell:
+    cmd: "docker run  -v {{ playbook_dir }}/{{ traefik_rules_location }}:/traefik:ro ghcr.io/otto-de/traefik-config-validator -cfgdir /traefik"
+  register: validation
+  delegate_to: localhost
+  become: false
+
+- name: Copy rules files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ traefik_dir }}/rules"
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: '0700'
+  with_fileglob:
+    - "{{ traefik_rules_location }}/*.yml"

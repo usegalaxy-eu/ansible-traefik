@@ -29,15 +29,8 @@
     group: "{{ traefik_group }}"
     mode: '0700'
 
-- name: Copy rules files
-  copy:
-    src: "{{ item }}"
-    dest: "{{ traefik_dir }}/rules"
-    owner: "{{ traefik_user }}"
-    group: "{{ traefik_group }}"
-    mode: '0700'
-  with_fileglob:
-    - "{{ traefik_rules_location }}"
+- name: Include traefik rules validation
+  ansible.builtin.include_tasks: validate.yml
   when: traefik_copy_rules
 
 
@@ -53,7 +46,7 @@
   # Comment
   ansible.builtin.systemd_service:
     name: docker
-    state: restarted
+    state: started
 
 
 - name: Create networks

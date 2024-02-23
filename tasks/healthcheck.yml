@@ -8,8 +8,12 @@
   ansible.builtin.shell:
     cmd: "docker service ps {{ item.name }} --format '{{ '{{' }} .CurrentState {{ '}}' }}' | awk '{print $1}'| grep Running | wc -l"
   register: inspect
-  failed_when: (inspect.stdout|int != item.replicas)
   changed_when: false
+- name: Debugging hint
+  ansible.builtin.debug:
+    msg: "Service {{ item.name }} is failing. You can check the logs with 'docker service logs {{ item.name }}'"
+  when: (inspect.stdout|int != item.replicas)
+  failed_when: (inspect.stdout|int != item.replicas)
 - name: Ensure all services are reachable
   ansible.builtin.uri:
     url: "{{ item.url }}"

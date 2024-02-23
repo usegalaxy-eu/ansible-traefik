@@ -6,9 +6,9 @@ traefik_user: root
 traefik_group: root
 
 traefik_copy_extra_files: false
-traefik_files_location: "files/traefik/*.yml"
+traefik_files_location: "files/traefik/"
 traefik_copy_rules: true
-traefik_rules_location: "files/traefik/rules/*.yml"
+traefik_rules_location: "files/traefik/rules"
 # if using cloudflare provider for DNS challenge,
 # set to true and put credentials in vault
 traefik_cloudflare: false
