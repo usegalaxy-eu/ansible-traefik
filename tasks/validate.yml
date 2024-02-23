@@ -1,5 +1,12 @@
 ---
-# Kept for when there is a v3 json schema
+- name: Ensures traefiks rules directory exists
+  ansible.builtin.file:
+    path: "{{ traefik_dir }}/rules"
+    state: directory
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: '0700'
+
 - name: Find treafik container in traefik_containers "traefik"
   set_fact:
     traefik_definition: "{{ traefik_containers | selectattr('image', 'match', 'traefik:') | first }}"
@@ -9,36 +16,23 @@
     traefik_version: "{{ traefik_definition.image.split(':')[1] | regex_replace('^v', '') | default('') }}"
 
 - name: Validate if traefik version < v3
-  when: traefik_version is version('3', '<')
+  when: (traefik_version is version('3', '<') and traefik_validation) or traefik_force_validation
   delegate_to: localhost
   become: false
   block:
-    - name: Create a data container
+    - name: Validate rules using a docker container
       community.docker.docker_container:
         name: traefik-validator
-        image: ghcr.io/otto-de/traefik-config-validator
+        command: ["-cfgdir", "/traefik"]
+        image: "{{ traefik_validation_image }}"
         volumes:
-          - "{{ traefik_rules_location_absolute }}:/traefik"
-
-    - name: Validate traefik config files
-      community.docker.docker_container_exec:
-        container: traefik-validator
-        argv:
-          - "-cfgdir"
-          - "/traefik"
+          - "{{ traefik_rules_location_absolute }}:/traefik:ro"
+        detach: false
       register: validation
-
     - name: Remove container
       community.docker.docker_container:
         name: traefik-validator
         state: absent
-    
-    - name: Fail when validation failed
-      ansible.builtin.fail:
-        msg: |
-          Validation failed!
-          {{ validation.strerr_lines }}
-      when: validation.rc != 0
 
 - name: Copy rules files
   copy:
