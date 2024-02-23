@@ -6,10 +6,10 @@
 
 - name: Split string after ":" to get the traefik image version
   set_fact:
-    traefik_version: "{{ traefik_definition.image.split(':')[1] | default('') }}"
+    traefik_version: "{{ traefik_definition.image.split(':')[1] | regex_replace('^v', '') | default('') }}"
 
 - name: Validate if traefik version < v3
-  when: traefik_version is version('v3', '<', version_type='semver')
+  when: traefik_version is version('3.0.0', '<')
   block:
     - name: Run a simple command (argv)
       community.docker.docker_container_exec:
