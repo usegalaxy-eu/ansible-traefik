@@ -9,7 +9,7 @@
     traefik_version: "{{ traefik_definition.image.split(':')[1] | regex_replace('^v', '') | default('') }}"
 
 - name: Validate if traefik version < v3
-  when: traefik_version is version('3.0.0', '<')
+  when: traefik_version is version('3', '<')
   delegate_to: localhost
   become: false
   block:
