@@ -10,16 +10,28 @@
 
 - name: Validate if traefik version < v3
   when: traefik_version is version('3.0.0', '<')
+  delegate_to: localhost
   block:
-    - name: Run a simple command (argv)
+    - name: Create a data container
+      community.docker.docker_container:
+        name: traefik-validator
+        image: ghcr.io/otto-de/traefik-config-validator
+        volumes:
+          - "{{ traefik_rules_location }}:/traefik"
+
+    - name: Validate traefik config files
       community.docker.docker_container_exec:
-        container: ghcr.io/otto-de/traefik-config-validator
+        container: traefik-validator
         argv:
           - "-cfgdir"
           - "/traefik"
-      delegate_to: localhost
       register: validation
       become: false
+
+    - name: Remove container
+      community.docker.docker_container:
+        name: traefik-validator
+        state: absent
     
     - name: Fail when validation failed
       ansible.builtin.fail:
