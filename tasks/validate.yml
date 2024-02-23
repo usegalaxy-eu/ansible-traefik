@@ -11,6 +11,7 @@
 - name: Validate if traefik version < v3
   when: traefik_version is version('3.0.0', '<')
   delegate_to: localhost
+  become: false
   block:
     - name: Create a data container
       community.docker.docker_container:
@@ -26,7 +27,6 @@
           - "-cfgdir"
           - "/traefik"
       register: validation
-      become: false
 
     - name: Remove container
       community.docker.docker_container:
