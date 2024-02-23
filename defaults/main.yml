@@ -83,7 +83,6 @@ traefik_containers:
       - --providers.file.directory=/rules
       - --providers.file.watch=true
       ## DNS Challenge
-      - --certificatesResolvers.dns-cloudflare.acme.email={{ docker_secrets['cloudflare_email'] }}
       - --certificatesResolvers.dns-cloudflare.acme.storage=/letsencrypt/acme.json
       - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
       - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53
