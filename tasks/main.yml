@@ -46,7 +46,8 @@
     name: "{{ item.name }}"
     image: "{{ item.image }}"
     replicas: "{{ item.replicas }}"
-   # restart_config: 
+    hostname: "{{ item.hostname | default(omit) }}"
+   # restart_config:
    #   delay: 5s
    #   max_attempts: 3
    #   window: 120s
