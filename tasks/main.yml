@@ -1,6 +1,15 @@
 ---
+- name: Make sure docker is running
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+
+- name: Init a new swarm with default parameters
+  community.docker.docker_swarm:
+    state: present
+
 - name: Ensures traefik dir exists
-  file:
+  ansible.builtin.file:
     path: "{{ traefik_dir }}"
     state: directory
     owner: "{{ traefik_user }}"
@@ -8,42 +17,22 @@
     mode: '0700'
 
 - name: Ensures acme.json file exists
-  file:
+  ansible.builtin.file:
     path: "{{ traefik_dir }}/acme.json"
     state: touch
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
     mode: '0600'
 
-- name: Include ACME Cloudflare Docker secrets
-  include_tasks: secrets.yml
+- name: Include Docker secrets creation
+  ansible.builtin.include_tasks: secrets.yml
   when: traefik_cloudflare
-
-- name: Ensures traefiks rules directory exists
-  file:
-    path: "{{ traefik_dir }}/rules"
-    state: directory
-    owner: "{{ traefik_user }}"
-    group: "{{ traefik_group }}"
-    mode: '0700'
 
 - name: Include traefik rules validation
   ansible.builtin.include_tasks: validate.yml
   when: traefik_copy_rules
 
-
-- name: Copy extra files
-  include_tasks: extra-files.yml
-  when: traefik_copy_extra_files
-
 # authelia starting point in b5a0d414fbb787d52bd23e14e2746e88fbee6bac
-
-- name: Make sure docker is running
-  # Comment
-  ansible.builtin.systemd_service:
-    name: docker
-    state: started
-
 
 - name: Create networks
   community.docker.docker_network:
