@@ -34,12 +34,20 @@
         name: traefik-validator
         state: absent
 
-- name: Copy rules files
-  copy:
-    src: "{{ item }}"
+- name: Sync rules files
+  ansible.posix.synchronize:
+    archive: false
+    delete: true
+    recursive: true
+    src: "{{ traefik_rules_location_absolute }}"
+    dest: "{{ traefik_dir }}"
+
+- name: Set permissions
+  ansible.builtin.file:
+    state: file
     dest: "{{ traefik_dir }}/rules"
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
     mode: '0700'
   with_fileglob:
-    - "{{ traefik_rules_location }}/*.yml"
+    - "{{ traefik_dir }}/rules/*.yml"
