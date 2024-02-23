@@ -9,6 +9,7 @@ traefik_copy_extra_files: false
 traefik_files_location: "files/traefik/"
 traefik_copy_rules: true
 traefik_rules_location: "files/traefik/rules"
+traefik_rules_location_absolute: "{{ playbook_dir }}/{{ traefik_rules_location }}"
 # if using cloudflare provider for DNS challenge,
 # set to true and put credentials in vault
 traefik_cloudflare: false

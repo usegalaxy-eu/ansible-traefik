@@ -18,7 +18,7 @@
         name: traefik-validator
         image: ghcr.io/otto-de/traefik-config-validator
         volumes:
-          - "{{ traefik_rules_location }}:/traefik"
+          - "{{ traefik_rules_location_absolute }}:/traefik"
 
     - name: Validate traefik config files
       community.docker.docker_container_exec:
