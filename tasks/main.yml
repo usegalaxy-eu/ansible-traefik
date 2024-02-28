@@ -37,38 +37,19 @@
 
 # authelia starting point in b5a0d414fbb787d52bd23e14e2746e88fbee6bac
 
-- name: Create networks
+- name: Create Docker networks
   community.docker.docker_network:
     name: "{{ item.key }}"
     internal: "{{ item.value.internal }}"
     driver: "{{ item.value.driver }}"
   loop: "{{ traefik_networks | dict2items }}"
 
-- name: Start a container
+- name: Create Docker Swarm services
   community.docker.docker_swarm_service:
     name: "{{ item.name }}"
     image: "{{ item.image }}"
     replicas: "{{ item.replicas }}"
     hostname: "{{ item.hostname | default(omit) }}"
-   # restart_config:
-   #   delay: 5s
-   #   max_attempts: 3
-   #   window: 120s
-   #   condition: "{{ item.restart_policy | default(omit) }}"
-   # update_config:
-   #   failure_action: "{{ item.update.failure_action if item.update.failure_action is defined else traefik_update.failure_action }}"
-   #   monitor: "{{ item.update.monitor if item.update.monitor is defined else traefik_update.monitor_time }}"
-   #   max_failure_ratio: "{{ item.update.max_failure_ratio if item.update.max_failure_ratio is defined else traefik_update.max_failure_ratio }}"
-   #   delay: "{{ item.update.delay if item.update.delay is defined else traefik_update.delay }}"
-   #   parallelism: "{{ item.update.parallelism if item.update.parallelism is defined else traefik_update.parallelism }}"
-   #   order: "{{ item.update.order if item.update.order is defined else traefik_update.order }}"
-   # rollback_config:
-   #   failure_action: "{{ item.rollback.failure_action if item.rollback.failure_action is defined else traefik_rollback.failure_action }}"
-   #   order: "{{ item.rollback.order if item.rollback.order is defined else traefik_rollback.order }}"
-   #   parallelism: "{{ item.rollback.parallelism if item.rollback.parallelism is defined else traefik_rollback.parallelism }}"
-   #   delay: "{{ item.rollback.parallelism if item.rollback.parallelism is defined else traefik_rollback.delay }}"
-   #   max_failure_ratio: "{{ item.rollback.max_failure_ratio if item.rollback.max_failure_ratio is defined else traefik_rollback.max_failure_ratio }}"
-   #   monitor: "{{ item.rollback.monitor if item.rollback.monitor is defined else traefik_rollback.monitor_time }}"
     mounts: "{{ item.mounts | default(omit) }}"
     publish: "{{ item.publish | default(omit) }}"
     env: "{{ item.environment | default(omit) }}"
@@ -78,7 +59,6 @@
     secrets: "{{ item.secrets | default(omit) }}"
     mode: "{{ item.mode | default(omit) }}"
     cap_add: "{{ item.cap_add | default(omit) }}"
-    # healthcheck: "{{ item.healthcheck | default(omit) }}"
   no_log: "{{ traefik_no_service_log}}"
   loop:
     "{{ traefik_containers }}"
