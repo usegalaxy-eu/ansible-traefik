@@ -6,6 +6,9 @@ traefik_force_validation: false
 traefik_validation: true
 traefik_validation_image: ghcr.io/otto-de/traefik-config-validator
 
+#hide the service log, e.g. if you can't use secrets anywhere
+traefik_no_service_log: false
+
 traefik_user: root
 traefik_group: root
 
