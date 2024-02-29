@@ -26,7 +26,7 @@
 
 - name: Include Docker secrets creation
   ansible.builtin.include_tasks: secrets.yml
-  when: traefik_cloudflare
+  when: traefik_manage_secrets
   loop: "{{ traefik_containers }}"
   loop_control:
     loop_var: service

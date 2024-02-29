@@ -6,6 +6,16 @@ traefik_force_validation: false
 traefik_validation: true
 traefik_validation_image: ghcr.io/otto-de/traefik-config-validator
 
+# enables the automatic creation of docker swarm secrets
+# you must provide a dictionary in the following way in your vault:
+# traefik_docker_secrets:
+#   my_secret_api_key: "mysupersecretapikey"
+# the key (my_secret_api_key) must exactly match the secret you specified
+# in the service definition under traefik_containers like
+# - secret_name: my_secret_api_key
+traefik_manage_secrets: false
+
+
 #hide the service log, e.g. if you can't use secrets anywhere
 traefik_no_service_log: false
 
