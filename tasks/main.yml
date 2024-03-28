@@ -1,62 +1,65 @@
 ---
-# tasks file for traefik
-- name: Include EL9 python workaround
-  include_tasks: ansible-python.yml
-  when: ansible_os_family == "RedHat"
+- name: Make sure docker is running
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+
+- name: Init a new swarm with default parameters
+  community.docker.docker_swarm:
+    state: present
 
 - name: Ensures traefik dir exists
-  file:
+  ansible.builtin.file:
     path: "{{ traefik_dir }}"
     state: directory
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: 0700
-  notify: "restart traefik"
+    mode: '0700'
 
 - name: Ensures acme.json file exists
-  file:
+  ansible.builtin.file:
     path: "{{ traefik_dir }}/acme.json"
     state: touch
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: 0600
+    mode: '0600'
 
-- name: Include ACME Cloudflare Docker secrets
-  include_tasks: cloudflare-secrets.yml
-  when: traefik_cloudflare
+- name: Include Docker secrets creation
+  ansible.builtin.include_tasks: secrets.yml
+  when: traefik_manage_secrets
+  loop: "{{ traefik_containers }}"
+  loop_control:
+    loop_var: service
 
-- name: Ensures traefiks rules directory exists
-  file:
-    path: "{{ traefik_dir }}/rules"
-    state: directory
-    owner: "{{ traefik_user }}"
-    group: "{{ traefik_group }}"
-    mode: 0700
+- name: Include traefik rules validation
+  ansible.builtin.include_tasks: validate.yml
+  when: traefik_copy_rules
 
-- name: Copy rules files
-  copy:
-    src: "{{ item }}"
-    dest: "{{ traefik_dir }}/rules"
-    owner: "{{ traefik_user }}"
-    group: "{{ traefik_group }}"
-    mode: 0700
-  with_fileglob:
-    - "files/rules/*"
+# authelia starting point in b5a0d414fbb787d52bd23e14e2746e88fbee6bac
 
-- name: Copy docker-compose file
-  copy:
-    src: "files/{{ traefik_compose_file }}"
-    dest: "{{ traefik_dir }}/{{ traefik_compose_file }}"
-    owner: "{{ traefik_user }}"
-    group: "{{ traefik_group }}"
-    mode: 0700
-  notify: "restart traefik"
+- name: Create Docker networks
+  community.docker.docker_network:
+    name: "{{ item.key }}"
+    internal: "{{ item.value.internal }}"
+    driver: "{{ item.value.driver }}"
+  loop: "{{ traefik_networks | dict2items }}"
 
-- name: Copy extra files
-  include_tasks: extra-files.yml
-  when: traefik_copy_extra_files or traefik_env
-
-- name: Start docker-compose
-  community.docker.docker_compose:
-    project_src: "{{ traefik_dir }}"
-  register: output
+- name: Create Docker Swarm services
+  community.docker.docker_swarm_service:
+    name: "{{ item.name }}"
+    image: "{{ item.image }}"
+    replicas: "{{ item.replicas }}"
+    hostname: "{{ item.hostname | default(omit) }}"
+    mounts: "{{ item.mounts | default(omit) }}"
+    publish: "{{ item.publish | default(omit) }}"
+    env: "{{ item.environment | default(omit) }}"
+    networks: "{{ item.networks }}"
+    args: "{{ item.command | default(omit) }}"
+    labels: "{{ item.labels | default(omit) }}"
+    secrets: "{{ item.secrets | default(omit) }}"
+    mode: "{{ item.mode | default(omit) }}"
+    cap_add: "{{ item.cap_add | default(omit) }}"
+  no_log: "{{ traefik_no_service_log}}"
+  loop:
+    "{{ traefik_containers }}"
+  notify: service_changed

@@ -1,0 +1,53 @@
+---
+- name: Ensures traefiks rules directory exists
+  ansible.builtin.file:
+    path: "{{ traefik_dir }}/rules"
+    state: directory
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: '0700'
+
+- name: Find treafik container in traefik_containers "traefik"
+  set_fact:
+    traefik_definition: "{{ traefik_containers | selectattr('image', 'match', 'traefik:') | first }}"
+
+- name: Split string after ":" to get the traefik image version
+  set_fact:
+    traefik_version: "{{ traefik_definition.image.split(':')[1] | regex_replace('^v', '') | default('') }}"
+
+- name: Validate if traefik version < v3
+  when: (traefik_version is version('3', '<') and traefik_validation) or traefik_force_validation
+  delegate_to: localhost
+  become: false
+  block:
+    - name: Validate rules using a docker container
+      community.docker.docker_container:
+        name: traefik-validator
+        command: ["-cfgdir", "/traefik"]
+        image: "{{ traefik_validation_image }}"
+        volumes:
+          - "{{ traefik_rules_location_absolute }}:/traefik:ro"
+        detach: false
+      register: validation
+    - name: Remove container
+      community.docker.docker_container:
+        name: traefik-validator
+        state: absent
+
+- name: Sync rules files
+  ansible.posix.synchronize:
+    archive: false
+    delete: true
+    recursive: true
+    src: "{{ traefik_rules_location_absolute }}"
+    dest: "{{ traefik_dir }}"
+
+- name: Set permissions
+  ansible.builtin.file:
+    state: file
+    dest: "{{ traefik_dir }}/rules"
+    owner: "{{ traefik_user }}"
+    group: "{{ traefik_group }}"
+    mode: '0700'
+  with_fileglob:
+    - "{{ traefik_dir }}/rules/*.yml"

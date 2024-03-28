@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  tasks:
-    - name: "Include usegalaxy_eu.traefik"
-      include_role:
-        name: "usegalaxy_eu.traefik"

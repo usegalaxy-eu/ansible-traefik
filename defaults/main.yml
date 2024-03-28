@@ -1,14 +1,159 @@
 ---
 # defaults file for traefik
 traefik_dir: /etc/traefik
-traefik_compose_file: docker-compose.yml
+
+traefik_force_validation: false
+traefik_validation: true
+traefik_validation_image: ghcr.io/otto-de/traefik-config-validator
+
+# enables the automatic creation of docker swarm secrets
+# you must provide a dictionary in the following way in your vault:
+# traefik_docker_secrets:
+#   my_secret_api_key: "mysupersecretapikey"
+# the key (my_secret_api_key) must exactly match the secret you specified
+# in the service definition under traefik_containers like
+# - secret_name: my_secret_api_key
+traefik_manage_secrets: false
+
+
+#hide the service log, e.g. if you can't use secrets anywhere
+traefik_no_service_log: false
+
 traefik_user: root
 traefik_group: root
-traefik_network_name: t2
-traefik_copy_extra_files: false
-# if using cloudflare provider for DNS challenge,
-# set to true and put credentials in vault
-traefik_cloudflare: false
 
-traefik_cloudflare_api_key: I_MUST_go_to_VAULT!
-traefik_cloudflare_email: I_should_go_to_vault_too!
+traefik_copy_extra_files: false
+traefik_files_location: "files/traefik/"
+traefik_copy_rules: true
+traefik_rules_location: "files/traefik/rules"
+traefik_rules_location_absolute: "{{ playbook_dir }}/{{ traefik_rules_location }}"
+# if using a certresolver for DNS challenge,
+# set to true and put credentials in vault, like
+# traefik_docker_secrets:
+#   cloudflare_api_key: abcdefghijklmnop
+traefik_manage_secrets: false
+
+traefik_update:
+  failure_action: rollback
+  monitor_time: 1m
+  max_failure_ratio: 0
+  order: stop-first
+  parallelism: 0
+  delay: 0s
+traefik_rollback:
+  failure_action: "continue"
+  monitor_time: 1m
+  max_failure_ratio: 0
+  order: stop-first
+  parallelism: 0
+  delay: 0s
+
+hostname: traefik.example.org
+
+traefik_domain: "{{ hostname }}"
+
+
+traefik_networks:
+  traefik:
+    internal: false
+    driver: overlay
+
+traefik_containers:
+  - name: traefik
+    image: traefik:v3.0
+    url: "https://{{ traefik_domain }}/dashboard/#/"
+    state: started
+    replicas: 1
+    restart_policy: on-failure
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/etc/traefik/rules:/rules"
+      - "/etc/traefik/acme.json:/letsencrypt/acme.json"
+      - "/var/log/traefik:/var/log/traefik"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    environment:
+      CF_API_EMAIL_FILE: "/run/secrets/cloudflare_email"
+      CF_API_KEY_FILE: "/run/secrets/cloudflare_api_key"
+    networks:
+      - traefik
+    command:
+      - --ping
+      - --ping.entryPoint=websecure
+      - --api=true
+      - --providers.swarm.exposedByDefault=false
+      - --providers.swarm.endpoint=unix:///var/run/docker.sock
+      - --api.dashboard=true
+      - --api.insecure=false
+      - --global.sendAnonymousUsage=false
+      - --global.checkNewVersion=false
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --providers.file.directory=/rules
+      - --providers.file.watch=true
+      ## DNS Challenge
+      - --certificatesResolvers.dns-cloudflare.acme.storage=/letsencrypt/acme.json
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53
+      - --certificatesresolvers.dns-cloudflare.acme.caserver=https://acme-v02.api.letsencrypt.org/directory
+      #- "--metrics.prometheus=true"
+      #- "--metrics.prometheus.manualrouting=true"
+
+      # Enable Logging
+      - "--log=true"
+      - "--log.level=WARN" # DEBUG, PANIC, FATAL, ERROR, WARN, INFO
+    labels:
+      "traefik.enable": "true"
+      "traefik.http.routers.traefik.rule": "Host(`{{ traefik_domain }}`) || Host(`www.{{ traefik_domain }}`)"
+      "traefik.http.routers.traefik.entrypoints": "websecure"
+      "traefik.http.routers.traefik.tls": "true"
+      "traefik.http.routers.traefik.tls.certresolver": "cloudflare"
+      #"traefik.http.routers.traefik.middlewares": "chain-basic-auth@file"
+      "traefik.http.routers.traefik.service": "api@internal"
+      "traefik.http.services.dummy-svc.loadbalancer.server.port": "9999"
+
+    security_opts:
+      - "label:type:container_runtime_t"
+
+    mode: global
+
+    mounts:
+      - source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+        type: bind
+        readonly: true
+      - source: "/var/run/tailscale/tailscaled.sock"
+        target: "/var/run/tailscale/tailscaled.sock"
+        type: bind
+        readonly: true
+      - source: "/etc/traefik/rules/"
+        target: "/rules"
+        type: bind
+        readonly: true
+      - source: "/etc/traefik/acme.json"
+        target: "/letsencrypt/acme.json"
+        type: bind
+        readonly: false
+      - source: "/var/log/traefik/"
+        target: "/var/log/traefik"
+        type: bind
+        readonly: false
+
+    publish:
+      - target_port: 80
+        published_port: 80
+        protocol: tcp
+      - target_port: 443
+        published_port: 443
+        protocol: tcp
+      - target_port: 8080
+        published_port: 8080
+        protocol: tcp
+
+    secrets:
+      - secret_name: cloudflare_email
+      - secret_name: cloudflare_api_key

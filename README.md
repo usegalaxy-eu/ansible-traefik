@@ -13,8 +13,8 @@ The role uses following variables:
 - **traefik_user** specifies the user to own the copied files and to be added to docker group
 - **traefik_group** specifies the group to own the copied files
 - **traefik_dir** the root path in which all files and the role directory go
-- **traefik_compose_file** in case you want a different name
-- **traefik_network_name** the name of created docker network
+- **traefik_containers** dictionary which specifies all details about the containers the role should start. Traefik, Traefik-Whoami and Jaegertracing by default. See `default/main.yml` for more details.
+- **traefik_networks** is a dictionary where you  specify docker network(s), that should be created. At least one with `internal` and `driver` keys is required.
 - **traefik_copy_extra_files** set to `true`, if you want to copy everything in files/traefik directory to the `traefik_dir`
 - **traefik_env** you can put all your .env variables here (with `traefik_env: |`) and it will be written to .env file directly.
 - **traefik_cloudflare** needs to be set to `true` to copy your `traefik_cloudflare_api` and `traefik_cloudflare_email` from vault into a Docker secret file.
