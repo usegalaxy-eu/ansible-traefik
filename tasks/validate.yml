@@ -15,6 +15,10 @@
   set_fact:
     traefik_version: "{{ traefik_definition.image.split(':')[1] | regex_replace('^v', '') | default('') }}"
 
+- name: Exclude template files, that can not be validated
+  ansible.builtin.set_fact:
+    __validation_volumes: "{{ lookup('fileglob',traefik_rules_location_absolute + '/*.yml',wantlist=true) | reject('search','template') | list | map('regex_replace', '^(.*)(/[^/]+)$', '\\1/\\2:/traefik\\2') }}"
+
 - name: Validate if traefik version < v3
   when: (traefik_version is version('3', '<') and traefik_validation) or traefik_force_validation
   delegate_to: localhost
@@ -25,8 +29,7 @@
         name: traefik-validator
         command: ["-cfgdir", "/traefik"]
         image: "{{ traefik_validation_image }}"
-        volumes:
-          - "{{ traefik_rules_location_absolute }}:/traefik:ro"
+        volumes: "{{ __validation_volumes }}"
         detach: false
       register: validation
     - name: Remove container
