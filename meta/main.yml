@@ -27,4 +27,3 @@ dependencies:
     vars:
       docker_users:
         - "{{ traefik_user }}"
-
