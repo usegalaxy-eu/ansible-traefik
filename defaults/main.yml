@@ -6,7 +6,6 @@ traefik_force_validation: false
 traefik_validation: true
 traefik_validation_image: ghcr.io/otto-de/traefik-config-validator
 
-traefik_validation_excluded_files: []
 # enables the automatic creation of docker swarm secrets
 # you must provide a dictionary in the following way in your vault:
 # traefik_docker_secrets:
