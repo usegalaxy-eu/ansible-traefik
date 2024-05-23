@@ -59,7 +59,7 @@
     secrets: "{{ item.secrets | default(omit) }}"
     mode: "{{ item.mode | default(omit) }}"
     cap_add: "{{ item.cap_add | default(omit) }}"
-  no_log: "{{ traefik_no_service_log}}"
+  no_log: "{{ traefik_no_service_log }}"
   loop:
     "{{ traefik_containers }}"
   notify: service_changed

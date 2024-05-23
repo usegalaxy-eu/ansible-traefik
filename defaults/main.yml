@@ -15,7 +15,6 @@ traefik_validation_image: ghcr.io/otto-de/traefik-config-validator
 # - secret_name: my_secret_api_key
 traefik_manage_secrets: false
 
-
 #hide the service log, e.g. if you can't use secrets anywhere
 traefik_no_service_log: false
 
@@ -27,11 +26,6 @@ traefik_files_location: "files/traefik/"
 traefik_copy_rules: true
 traefik_rules_location: "files/traefik/rules"
 traefik_rules_location_absolute: "{{ playbook_dir }}/{{ traefik_rules_location }}"
-# if using a certresolver for DNS challenge,
-# set to true and put credentials in vault, like
-# traefik_docker_secrets:
-#   cloudflare_api_key: abcdefghijklmnop
-traefik_manage_secrets: false
 
 traefik_update:
   failure_action: rollback
@@ -51,7 +45,6 @@ traefik_rollback:
 hostname: traefik.example.org
 
 traefik_domain: "{{ hostname }}"
-
 
 traefik_networks:
   traefik:
