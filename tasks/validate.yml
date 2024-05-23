@@ -5,7 +5,7 @@
     state: directory
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: '0700'
+    mode: "0700"
 
 - name: Find treafik container in traefik_containers "traefik"
   set_fact:
@@ -37,6 +37,11 @@
         name: traefik-validator
         state: absent
 
+- name: Ensure rsync
+  ansible.builtin.package:
+    name:
+      - rsync
+
 - name: Sync rules files
   ansible.posix.synchronize:
     archive: false
@@ -51,6 +56,6 @@
     dest: "{{ traefik_dir }}/rules"
     owner: "{{ traefik_user }}"
     group: "{{ traefik_group }}"
-    mode: '0700'
+    mode: "0700"
   with_fileglob:
     - "{{ traefik_dir }}/rules/*.yml"
