@@ -6,7 +6,7 @@
   changed_when: false
 - name: Check for errors
   ansible.builtin.shell:
-    cmd: "docker service ps {{ item.name }} --format '{{ '{{' }} .CurrentState {{ '}}' }}' | awk '{print $1}'| grep Running | wc -l"
+    cmd: "set -o pipefail && docker service ps {{ item.name }} --format '{{ '{{' }} .CurrentState {{ '}}' }}' | awk '{print $1}'| grep Running | wc -l"
   register: inspect
   changed_when: false
 - name: Debugging hint
