@@ -35,8 +35,6 @@
   ansible.builtin.include_tasks: validate.yml
   when: traefik_copy_rules
 
-# authelia starting point in b5a0d414fbb787d52bd23e14e2746e88fbee6bac
-
 - name: Create Docker networks
   community.docker.docker_network:
     name: "{{ item.key }}"
@@ -48,7 +46,7 @@
   community.docker.docker_swarm_service:
     name: "{{ item.name }}"
     image: "{{ item.image }}"
-    replicas: "{{ item.replicas }}"
+    replicas: "{{ (item.mode == 'replicated') | ternary(item.replicas, omit) }}"
     hostname: "{{ item.hostname | default(omit) }}"
     mounts: "{{ item.mounts | default(omit) }}"
     publish: "{{ item.publish | default(omit) }}"
