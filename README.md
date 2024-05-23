@@ -258,7 +258,7 @@ traefik_containers:
       - secret_name: aws_shared_credentials
 ~~~
 ### Ansible-Vault for AWS or Cloudflare
-~~~
+~~~yaml
 ---
 traefik_docker_secrets:
   cloudflare_api_key: abcdefg12345678hijklmnop
