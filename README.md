@@ -10,6 +10,16 @@ On *both* the control and the remote node:
 - rsync
 (We need Docker to validate the rules files before copying them.)
 
+On the remote node:  
+dnf-packages:
+  - python3-policycoreutils
+  - python3-libselinux
+  - policycoreutils-python-utils
+  - python3-pip
+python-packages:
+  - docker
+  - selinux
+
 ## Role Variables
 See the examples and the `defaults/main.yml`
 ## Dependencies
@@ -30,9 +40,27 @@ A basic playbook example could look like this:
 - name: Traefik
   become: yes
   hosts: all
-  vars:
-    traefik_user: rocky
-    traefik_group: rocky
+  vars_files:
+    - secret_group_vars/all.yml
+    - secret_group_vars/traefik.yml
+    - group_vars/all.yml
+  pre_tasks:
+    - name: Install ansible dependencies
+      ansible.builtin.package:
+        name:
+          - python3-policycoreutils
+          - python3-libselinux
+          - policycoreutils-python-utils
+          - python3-pip
+
+    - name: Install python docker
+      become: true
+      ansible.builtin.pip:
+        name: "{{ item }}"
+        virtualenv_command: "python3 -m venv"
+      loop:
+        - docker
+        - selinux
   roles:
     - traefik
 ```
