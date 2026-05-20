@@ -54,7 +54,7 @@ traefik_networks:
 
 traefik_containers:
   - name: traefik
-    image: traefik:v3.7
+    image: traefik:latest
     url: "https://{{ traefik_domain }}/dashboard/#/"
     state: started
     replicas: 1
